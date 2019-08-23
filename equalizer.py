@@ -25,7 +25,7 @@ def parameters(fs):
             lowpass(hz(2000), Q=0.707),
         )
     elif choose == 2:
-        # try differten filter types
+        # try different filter types
         return (
             shelf(hz(125), +5.0, S=1, btype='low'),
             shelf(hz(10e3), +1.0, S=1, btype='high'),
@@ -46,6 +46,7 @@ def _view():
         return 20 * np.log10(np.abs(h))
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+    ax1.set_title('Equalizer Design')
 
     hs = None
     fs = 46e3 # between 44100 and 48000
@@ -64,14 +65,14 @@ def _view():
 
     # resulting amplitude, angle
     ax1.plot(w, amp_db(hs), alpha=0.3, zorder=0.2, linewidth=7)
-    ax1.set_yticks(range(-10, 10, 3))
+    ax1.set_yticks(range(-60, 30, 3))
     ax1.set_ylim(-10, 10)
 
     # resulting angle
     angle = np.unwrap(np.angle(hs))
     ax2.plot(w, angle, alpha=0.3, zorder=0.2, linewidth=7)
 
-    for ax, ylabel in ((ax1, 'Amplitude [dB]' ), (ax2, 'Angle [radians]')):
+    for ax, ylabel in ((ax1, 'Amplitude [dB]' ), (ax2, 'Phase [radians]')):
         ax.set_xscale('log')
         ax.set_xlim(20, fs/2)
         ax.set_xlabel('Frequency [Hz]')
