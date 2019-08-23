@@ -1,0 +1,17 @@
+[Unit]
+Description=TAS5713 Equalizer Service
+After=sound.target
+
+[Service]
+Type=oneshot
+User=pi
+WorkingDirectory=/home/pi/
+ExecStart=/usr/bin/python3 /home/pi/tas5713eq.py
+
+[Install]
+WantedBy=multi-user.target
+
+
+# Hint: install/enable service
+# cp tas5713eq.service /lib/systemd/system/
+# systemctl enable tas5713eq.service
