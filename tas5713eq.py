@@ -25,7 +25,7 @@ class TAS5713(SMBus):
         @param address   eeproms default is 0x1b
         @param bus_id    I2C bus id, on raspi normally 1
         """
-        SMBus.__init__(self, bus)
+        SMBus.__init__(self, bus, force=True)
         self.addr = device_address
 
     @staticmethod
@@ -54,7 +54,6 @@ class TAS5713(SMBus):
 
         @return list[tuple(reg, [int,...]),]
         """
-
         biquads = [TAS5713.to_ba(b, a) for b, a in ba_lst]
         assert len(biquads) <= TAS5713.BQ_nb
 
@@ -72,34 +71,32 @@ class TAS5713(SMBus):
         return regvals
 
 
-
 if __name__ == "__main__":
 
-    fs = 46e3 # use something in between 44.1kHz and 48kHz, the common sample rates of my music
+    fs = 46e3  # use something in between 44.1kHz and 48kHz, the common sample rates of my music
     cmd_lst = TAS5713.bq_cmd_value(equalizer.parameters(fs))
 
     # connect to the tas5713 and try to write the BQ1 and BQ2 register set
-    con_attemps = 5
+    con_attempts = 5
     audio = None
     while audio is None:
         try:
             # try to open, sometimes the linux kernel driver is still accessing the i2c-1 bus and open() fails
             audio = TAS5713()
         except: ## TODO: catch the right exception only
-            if attemps == 0:
+            if con_attempts == 0:
                 sys.exit(1)
-
-            attemps -= 1
+            con_attempts -= 1
             time.sleep(5.0)
 
 
     try:
         for cmd, data in cmd_lst:
-            audio.write_i2c_block_data(audio.addr, cmd, data, force=True)
+            audio.write_i2c_block_data(audio.addr, cmd, data)
 
-            # verfiy it is really written, at least print something usefull ...
-            read = audio.read_i2c_block_data(audio.addr, cmd, 20, force=True)
-            print('[{}]:{:02X}h: {}'.format('OK' if read == data else 'FAIL', cmd, read))
+            # verify it is really written, at least print something useful ...
+            read = audio.read_i2c_block_data(audio.addr, cmd, len(data))
+            print('[{}]:{:02X}: {}'.format('OK' if read == data else 'FAIL', cmd, read))
     finally:
         if audio is not None:
             audio.close()
