@@ -14,13 +14,26 @@ def parameters(fs):
         # some bass and treble
         return (
             shelf(Wn=hz(125), dBgain=+5.0, S=1, btype='low'),
-            shelf(Wn=hz(10e3), dBgain=+1.0, S=1, btype='high'),
+            shelf(Wn=hz(8e3), dBgain=+1.5, S=0.7, btype='high'),
         )
     elif choose == 1:
         # bandpass 200...2kHz
         return (
             highpass(hz(200), Q=0.707),
             lowpass(hz(2000), Q=0.707),
+        )
+    elif choose == 2:
+        # peaking a lot
+        return (
+            peaking(hz(63.5), +6., Q=1, type='constantq'),
+            peaking(hz(125), +3., Q=1, type='half'),
+            peaking(hz(250), -3., Q=1, type='constantq'),
+            peaking(hz(500), -6., Q=1, type='half'),
+            peaking(hz(1e3), +7, Q=1, type='constantq'),
+            peaking(hz(2e3), -6., Q=1, type='half'),
+            peaking(hz(4e3), -3., Q=1, type='constantq'),
+            peaking(hz(8e3), +3., Q=1, type='half'),
+            peaking(hz(16e3), +6., Q=1, type='constantq'),
         )
     elif choose == 3:
         # try different filter types
@@ -36,19 +49,19 @@ def parameters(fs):
     elif choose == 4:
         # high-order 200...1kHz bandpass filter
         # ripple: passband=1.0dB, stopband=48db attenuation
-        iir_second_order_structure =  signal.ellip(N=9, rp=1, rs=48., Wn=(hz(200), hz(1000)), btype='bandpass', output='sos')
+        iir_second_order_structure = signal.iirfilter(N=9, rp=1., rs=30., Wn=(200, 1000), btype='bandpass', ftype='ellip', output='sos', fs=fs)
         # split up the coefficients
         return [(ba[:3], ba[3:]) for ba in iir_second_order_structure]
 
     elif choose == 5: # bandstop
-        iir_second_order_structure =  signal.ellip(N=9, rp=1, rs=48., Wn=(hz(200), hz(1000)), btype='bandstop', output='sos')
+        iir_second_order_structure = signal.iirfilter(N=9, rp=1., rs=30., Wn=(200, 1000), btype='bandstop', ftype='ellip', output='sos', fs=fs)
         # split up the coefficients
         return [(ba[:3], ba[3:]) for ba in iir_second_order_structure]
 
     elif choose == 6:
-        # high-order 200Hz lowpass filter with 6dB amplification
+        # high-order 250Hz lowpass filter with 6dB amplification
         # ripple: passband=0.5dB, stopband=48db attenuation
-        iir_second_order_structure =  signal.ellip(N=12, rp=0.5, rs=48., Wn=hz(250), btype='lowpass', output='sos')
+        iir_second_order_structure = signal.iirfilter(N=12, rp=0.5, rs=48., Wn=250, btype='lowpass', ftype='ellip', output='sos', fs=fs)
         # split up the coefficients
         return [(ba[:3], ba[3:]) for ba in iir_second_order_structure] + [((2.0, 0., 0.), (1.0, 0., 0.))]
 
@@ -82,7 +95,7 @@ def _view():
     # resulting amplitude, angle
     ax1.plot(w, amp_db(hs), alpha=0.3, zorder=0.2, linewidth=7)
     ax1.set_yticks(range(-60, 30, 3))
-    ax1.set_ylim(-10, 10)
+    ax1.set_ylim(-12, 12)
 
     # resulting angle
     angle = np.unwrap(np.angle(hs))
