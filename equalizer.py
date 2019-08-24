@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# $Id: equalizer.py 386 2019-08-23 10:40:25Z stefan $
 
 from biquad import highpass, lowpass, bandpass, allpass, notch, peaking, shelf
-
+from scipy import signal
 
 def parameters(fs):
     def hz(f):
-        return 2 * f / fs
+        return 2. * f / fs
 
     choose = 0
 
     if choose == 0:
         # some bass and treble
         return (
-            shelf(hz(125), +5.0, S=1, btype='low'),
-            shelf(hz(10e3), +1.0, S=1, btype='high'),
+            shelf(Wn=hz(125), dBgain=+5.0, S=1, btype='low'),
+            shelf(Wn=hz(10e3), dBgain=+1.0, S=1, btype='high'),
         )
     elif choose == 1:
         # bandpass 200...2kHz
@@ -24,7 +22,7 @@ def parameters(fs):
             highpass(hz(200), Q=0.707),
             lowpass(hz(2000), Q=0.707),
         )
-    elif choose == 2:
+    elif choose == 3:
         # try different filter types
         return (
             shelf(hz(125), +5.0, S=1, btype='low'),
@@ -35,6 +33,24 @@ def parameters(fs):
             lowpass(hz(17.5e3), Q=0.707),
             allpass(hz(2e3), Q=2),
         )
+    elif choose == 4:
+        # high-order 200...1kHz bandpass filter
+        # ripple: passband=1.0dB, stopband=48db attenuation
+        iir_second_order_structure =  signal.ellip(N=9, rp=1, rs=48., Wn=(hz(200), hz(1000)), btype='bandpass', output='sos')
+        # split up the coefficients
+        return [(ba[:3], ba[3:]) for ba in iir_second_order_structure]
+
+    elif choose == 5: # bandstop
+        iir_second_order_structure =  signal.ellip(N=9, rp=1, rs=48., Wn=(hz(200), hz(1000)), btype='bandstop', output='sos')
+        # split up the coefficients
+        return [(ba[:3], ba[3:]) for ba in iir_second_order_structure]
+
+    elif choose == 6:
+        # high-order 200Hz lowpass filter with 6dB amplification
+        # ripple: passband=0.5dB, stopband=48db attenuation
+        iir_second_order_structure =  signal.ellip(N=12, rp=0.5, rs=48., Wn=hz(250), btype='lowpass', output='sos')
+        # split up the coefficients
+        return [(ba[:3], ba[3:]) for ba in iir_second_order_structure] + [((2.0, 0., 0.), (1.0, 0., 0.))]
 
 
 def _view():
@@ -86,4 +102,3 @@ def _view():
 
 if __name__ == "__main__":
     _view()
-
