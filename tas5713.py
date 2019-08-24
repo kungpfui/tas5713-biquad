@@ -10,14 +10,6 @@ from struct import Struct
 from smbus2 import SMBus
 
 
-def fmt_hex(b):
-    if isinstance(b, (bytes, bytearray)):
-        return ' '.join(['{:02X}'.format(i) for i in b])
-    if isinstance(b, int):
-        return '{:02X}'.format(b)
-    return b
-
-
 class Reg:
     def __init__(self, addr, size='B'):
         self.addr = addr
