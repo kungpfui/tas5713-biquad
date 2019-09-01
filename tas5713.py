@@ -131,12 +131,10 @@ class TAS5713(SMBus):
     def write_reg(self, reg, data):
         """ write a register with some data
 
-        :param reg: type Reg
-        :param data:
+        :param reg: Reg
+        :param data: bytes, bytearray, list of int
         """
-        reg.data = data
-        # write_i2c_block_data expects list of int. bytes or byte array does not work ... why ever
-        return self.write_i2c_block_data(self.addr, reg.addr, [d for d in reg.data])
+        return self.write_i2c_block_data(self.addr, reg.addr, data)
 
     @staticmethod
     def bq_reg_value(bqs):
@@ -164,15 +162,22 @@ class TAS5713(SMBus):
 if __name__ == "__main__":
     # some simple tests
     amp = TAS5713()
-    for addr in range(0, 0xF):
-        reg = Reg(addr)
+    for reg in (TAS5713.CLOCK_CTRL_reg,
+                TAS5713.DEVICE_ID_reg,
+                TAS5713.ERROR_STATUS_reg,
+                TAS5713.SYSTEM_CTRL1_reg,
+                TAS5713.SERIAL_DATA_INTERFACE_reg,
+                TAS5713.SYSTEM_CTRL2_reg,
+                TAS5713.SOFT_MUTE_reg,
+                TAS5713.MASTER_VOLUME_reg,
+                TAS5713.CH1_VOLUME_reg,
+                TAS5713.CH2_VOLUME_reg,
+                TAS5713.VOLUME_CFG_reg,
+                TAS5713.BANK_SWT_EQ_CTRL_reg,
+                *TAS5713.CH1_BQ_reg):
         data = amp.read_reg(reg)
         print('{:02X}: {}'.format(reg.addr, reg.hex(data)))
 
-    for reg in (TAS5713.BANK_SWT_EQ_CTRL_reg,
-                TAS5713.CH1_BQ_reg[0]):
-        data = amp.read_reg(reg)
-        print('{:02X}: {}'.format(reg.addr, reg.hex(data)))
         if isinstance(reg, BQReg):
             # show real biquad coefficients
             print('{:02X}: {}'.format(reg.addr, BQReg.reg_to_ba(data)))
