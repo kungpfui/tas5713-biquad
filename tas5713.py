@@ -161,25 +161,24 @@ class TAS5713(SMBus):
 
 if __name__ == "__main__":
     # some simple tests
-    amp = TAS5713()
-    for reg in (TAS5713.CLOCK_CTRL_reg,
-                TAS5713.DEVICE_ID_reg,
-                TAS5713.ERROR_STATUS_reg,
-                TAS5713.SYSTEM_CTRL1_reg,
-                TAS5713.SERIAL_DATA_INTERFACE_reg,
-                TAS5713.SYSTEM_CTRL2_reg,
-                TAS5713.SOFT_MUTE_reg,
-                TAS5713.MASTER_VOLUME_reg,
-                TAS5713.CH1_VOLUME_reg,
-                TAS5713.CH2_VOLUME_reg,
-                TAS5713.VOLUME_CFG_reg,
-                TAS5713.BANK_SWT_EQ_CTRL_reg,
-                *TAS5713.CH1_BQ_reg):
-        data = amp.read_reg(reg)
-        print('{:02X}: {}'.format(reg.addr, reg.hex(data)))
+    with TAS5713() as amp:
+        for reg in (TAS5713.CLOCK_CTRL_reg,
+                    TAS5713.DEVICE_ID_reg,
+                    TAS5713.ERROR_STATUS_reg,
+                    TAS5713.SYSTEM_CTRL1_reg,
+                    TAS5713.SERIAL_DATA_INTERFACE_reg,
+                    TAS5713.SYSTEM_CTRL2_reg,
+                    TAS5713.SOFT_MUTE_reg,
+                    TAS5713.MASTER_VOLUME_reg,
+                    TAS5713.CH1_VOLUME_reg,
+                    TAS5713.CH2_VOLUME_reg,
+                    TAS5713.VOLUME_CFG_reg,
+                    TAS5713.BANK_SWT_EQ_CTRL_reg,
+                    *TAS5713.CH1_BQ_reg):
+            data = amp.read_reg(reg)
+            print('{:02X}: {}'.format(reg.addr, reg.hex(data)))
 
-        if isinstance(reg, BQReg):
-            # show real biquad coefficients
-            print('{:02X}: {}'.format(reg.addr, BQReg.reg_to_ba(data)))
+            if isinstance(reg, BQReg):
+                # show real biquad coefficients
+                print('{:02X}: {}'.format(reg.addr, BQReg.reg_to_ba(data)))
 
-    amp.close()
